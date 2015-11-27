@@ -9,6 +9,8 @@ char* copy_str(char *);
 
 TokenType get_token_bystr(char*);
 
-TreeNode* create_node();
+TreeNode* create_node(NodeType, int);
+
+TreeNode* error_node();
 
 #endif

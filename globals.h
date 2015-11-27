@@ -1,7 +1,7 @@
 #ifndef _GLOBALS_H_
 #define _GLOBALS_H_
 
-#define MAX_CHILDREN 3
+#define MAX_CHILDREN 10
 
 typedef enum
 {
@@ -16,6 +16,12 @@ typedef enum
 	LPAREN,RPAREN,LBRACKET,RBRACKET,SEMI
 } TokenType;
 
+typedef enum
+{
+	PROG=1, DECLS, DECL, STMT, IFSTMT, ASSIGNSTMT, COMPOUNDSTMT, WHILESTMT, STMTS, BOOLEXPR, BOOLOP,
+	ARITHEXPR, ARITHEXPR_P, MULTIEXPR, MULTIEXPR_P, SIMPLEEXPR
+} NontermType;
+
 typedef struct 
 {
 	TokenType type;
@@ -29,10 +35,23 @@ typedef struct
 	int linepos;
 } Token;
 
+typedef enum
+{
+	TERMINAL,
+	NONTERMINAL,
+	ERRORNODE
+} NodeType;
+
 typedef struct treenode
 {
+	NodeType node_type;
+	union{
+		TokenType term;
+		NontermType nonterm;
+	}type;
 	struct treenode* child[MAX_CHILDREN];
 	struct treenode* sibling;
+	int n_child;
 	int lineno;
 	int linepos;
 	union{

@@ -93,9 +93,9 @@ TokenType get_token_bystr(char* s)
 	}
 }
 
-TreeNode* create_node(){
+TreeNode* create_node(NodeType type, int child_number){
 	TreeNode* new_node = (TreeNode*)malloc(sizeof(TreeNode));
-	if (t == NULL){
+	if (new_node == NULL){
 		printf("error, out of memory!\n");
 	}
 	else{
@@ -103,9 +103,32 @@ TreeNode* create_node(){
 		for (i=0; i<MAX_CHILDREN; i++){
 			new_node -> child[i] = NULL;
 		}
+		new_node -> node_type = type;
 		new_node -> sibling = NULL;
 		new_node -> lineno = 0;
 		new_node -> linepos = 0;
+		new_node -> n_child = child_number;
 	}
 	return new_node;
+}
+
+TreeNode* error_node(){
+	static TreeNode* t = NULL;
+	if (t==NULL){
+		t = (TreeNode*)malloc(sizeof(TreeNode));
+		if (t == NULL){
+			printf("error, out of memory!\n");
+		}
+
+		int i;
+		for (i=0; i<MAX_CHILDREN; i++){
+			t -> child[i] = NULL;
+		}
+		t -> node_type = ERRORNODE;
+		t -> sibling = NULL;
+		t -> lineno = 0;
+		t -> linepos = 0;
+		t -> n_child = 0;
+	}
+	return t;
 }

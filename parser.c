@@ -87,6 +87,69 @@ int push_rules[50][15] = {
 	{-10,12,-9,0} // 34
 };
 
+int node_child_number[40] = {
+	0, 2, 3, 0, 4, 4, //0-5
+	1, 1, 1, 1, 8, //6-10
+	4, 3, 5, 2, 0, //11-15
+	3, 1, 1, 1, 1, //16-20
+	1, 1, 2, 3, 3, //21-25
+	0, 2, 3, 3, 0, //26-30
+	1, 1, 1, 3 //31-34
+};
+
+int node_finished(TreeNode* t){
+	int n_fin = 0;
+	while(t->child[n_fin] != NULL){
+		n_fin++;
+	}
+	return n_fin == t->n_child;
+}
+
+TreeNode* node_stack[200];
+int node_stack_top = -1;
+
+void check_node_stack(){
+	while(node_stack_top >= 0){
+		TreeNode* t = node_stack[node_stack_top];
+		if (!node_finished(t)){
+			break;
+		}
+
+		if (node_stack_top != 0){
+			TreeNode* f = node_stack[node_stack_top-1];
+			int next_child = 0;
+			while(f->child[next_child]!=NULL){
+				next_child++;
+			}
+
+			f->child[next_child] = t;
+		}
+
+		node_stack_top--;
+	}
+}
+
+TreeNode* push_node(NodeType nodetype, int order){
+	TreeNode* t;
+	if (nodetype == ERRORNODE){
+		t = error_node();
+	}
+	else if (nodetype == NONTERMINAL){
+		t = create_node(nodetype, node_child_number[order]);
+		t->type.nonterm = order;
+	}
+	else if (nodetype == TERMINAL){
+		t = create_node(nodetype, 0);
+		t->type.term = order;
+	}
+	node_stack_top++;
+	node_stack[node_stack_top] = t;
+
+	check_node_stack();
+
+	return t;
+}
+
 int terminal_order(TokenType tokenType){
 	int i;
 	for (i = 1; i <= N_TERMINAL; i++){
@@ -119,6 +182,7 @@ TreeNode* parse(){
 	int top = 0; // stack's top
 
 	stack[top] = START_NONTERMINAL; // push start symbol into the stack
+	TreeNode* tree_root = push_node(NONTERMINAL, START_NONTERMINAL); // push root node to node stack
 
 	int terminal = 0;
 	int is_valid = 1;
@@ -136,6 +200,7 @@ TreeNode* parse(){
 				//printf("matched:%s, at %d:%d\n", terminal_names[terminal], next_token.lineno, next_token.linepos);
 				// matched, pop
 				top--;
+				push_node(TERMINAL, next_token.type);
 				// get next token
 				yylex();
 				//printf("token:%s, at %d:%d\n", terminal_names[terminal_order(next_token.type)], next_token.lineno, next_token.linepos);
@@ -143,6 +208,7 @@ TreeNode* parse(){
 			else {
 				missed_error_message(abs(stack[top]));
 				top--;
+				push_node(ERRORNODE, 0);
 				is_valid = 0;
 			}
 		}
@@ -154,6 +220,7 @@ TreeNode* parse(){
 			if (rule_order == MAX_RULE_ORDER + 1){
 				printf("error at %d:%d, do pop\n", next_token.lineno, next_token.linepos);
 				top--; // pop
+				push_node(ERRORNODE, 0);
 				is_valid = 0;
 			} 
 			// scan
@@ -169,6 +236,7 @@ TreeNode* parse(){
 				rule = push_rules[rule_order];
 
 				top--; // pop
+				push_node(NONTERMINAL, rule_order);
 				int i = 0;
 				while(rule[i] != 0){
 					top++;
@@ -190,5 +258,5 @@ TreeNode* parse(){
 		printf("error at %d:%d\n", next_token.lineno, next_token.linepos);
 	}
 
-	return NULL;
+	return tree_root;
 }
