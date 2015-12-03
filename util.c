@@ -151,6 +151,19 @@ void print_node(TreeNode* node){
 	}
 	else if (node->node_type == TERMINAL){
 		printf("%s", terminal_names[node->type.term]);
+		switch (node->type.term){
+			case ID:
+				printf(", %s", node->value.name);
+				break;
+			case INTNUM:
+				printf(", %d", node->value.int_val);
+				break;
+			case REALNUM:
+				printf(", %.3lf", node->value.real_val);
+				break;
+			default:
+				break;
+		}
 	}
 	else if (node->node_type == NONTERMINAL){
 		printf("%s", nonterminal_names[node->type.nonterm]);
@@ -169,46 +182,53 @@ void print_tree(TreeNode* root){
 	int first = 0, last = 0, max_list = 298;
 	node_list[last++] = root;
 	node_list[last++] = endline_node;
-	while(last > first+1){
+	while(last != (first+1) % max_list){
 		//printf("first: %d, last: %d, top_addr:%p\n", first, last, node_list[first]);
 		t = node_list[first];
 		if (t == l_paren_node){
 			printf(" [");
-			first++;
+			first = (first+1) % max_list;
 		}
 		else if (t == r_paren_node){
 			printf("] ");
-			first++;
+			first = (first+1) % max_list;
 		}
 		else if (t == endline_node){
 			printf("\n");
 			node_list[last] = endline_node;
-			last++;
-			first++;
+			last = (last+1) % max_list;
+			first = (first+1) % max_list;
 		}
 		else {
 			if (t->n_child > 0){
 				printf("<");
 				print_node(t);
 				printf(">");
-				first++;
+				first = (first+1) % max_list;
 
 				node_list[last] = l_paren_node;
-				last++;
+				last = (last+1) % max_list;
 				int i;
 				for (i=0; i<t->n_child; i++){
 					node_list[last] = t->child[i];
-					last++;
+					last = (last+1) % max_list;
 				}
 				node_list[last] = r_paren_node;
-				last++;
+				last = (last+1) % max_list;
 			}
 			else {
 				print_node(t);
-				first++;
+				first = (first+1) % max_list;
 			}
+			/* free test
+			if(t->node_type != ERRORNODE){
+				free(t); // free tree node
+			}
+			*/
 		}
 	}
 	printf("\n");
-
+	free(endline_node);
+	free(l_paren_node);
+	free(r_paren_node);
 }

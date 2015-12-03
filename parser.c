@@ -11,14 +11,6 @@ extern int yylex();
 extern char* yytext;
 extern Token next_token;
 
-TokenType terminals[50] = {
-	ERROR, SEMI, INT, ID, ASSIGN, INTNUM, 
-	REAL, REALNUM, IF, LPAREN, RPAREN, THEN, 
-	ELSE, LBRACKET, RBRACKET, WHILE, LT, GT, 
-	LET, GET, EQ, NEQ, PLUS, MINUS, 
-	TIMES, OVER, AT_EOF
-};
-
 char * terminal_names[40] = {
 	"error", ";", "int", "id", "=", "intvalue", 
 	"real", "realvalue", "if", "(", ")", "then",
@@ -146,6 +138,19 @@ TreeNode* push_node(NodeType nodetype, int order){
 	else if (nodetype == TERMINAL){
 		t = create_node(nodetype, 0);
 		t->type.term = order;
+		switch (order){
+			case ID:
+				t->value.name = next_token.value.name;
+				break;
+			case INTNUM:
+				t->value.int_val = next_token.value.int_val;
+				break;
+			case REALNUM:
+				t->value.real_val = next_token.value.real_val;
+				break;
+			default:
+				break;
+		}
 	}
 	node_stack_top++;
 	node_stack[node_stack_top] = t;
@@ -155,16 +160,6 @@ TreeNode* push_node(NodeType nodetype, int order){
 	check_node_stack();
 
 	return t;
-}
-
-int terminal_order(TokenType tokenType){
-	int i;
-	for (i = 1; i <= N_TERMINAL; i++){
-		if (tokenType == terminals[i]){
-			return i;
-		}
-	}
-	return -1; // error
 }
 
 void missed_error_message(int terminal){
@@ -180,11 +175,8 @@ void get_next_token(){
 }
 
 void scan(int nonterminal){
-	int terminal = terminal_order(next_token.type);
-	while(parsing_table[nonterminal][terminal] == MAX_RULE_ORDER + 2){
+	while(parsing_table[nonterminal][next_token.type] == MAX_RULE_ORDER + 2){
 		get_next_token();
-		//printf("token:%s, at %d:%d\n", terminal_names[terminal_order(next_token.type)], next_token.lineno, next_token.linepos);
-		terminal = terminal_order(next_token.type);
 
 		if (next_token.type == AT_EOF){
 			return;
@@ -203,8 +195,7 @@ TreeNode* parse(){
 	int terminal = 0;
 	int is_valid = 1;
 	get_next_token();
-	//printf("token:%s, at %d:%d\n", terminal_names[terminal_order(next_token.type)], next_token.lineno, next_token.linepos);
-	
+
 	while(top >= 0){
 		#ifdef _DEBUG_
 		if(stack[top] > 0){
@@ -218,7 +209,7 @@ TreeNode* parse(){
 		}
 		#endif
 
-		terminal = terminal_order(next_token.type);
+		terminal = next_token.type;
 
 		// terminal
 		if (stack[top] < 0){
@@ -234,7 +225,7 @@ TreeNode* parse(){
 				get_next_token();
 
 				#ifdef _DEBUG_
-				printf("token:%s, at %d:%d\n", terminal_names[terminal_order(next_token.type)], next_token.lineno, next_token.linepos);
+				printf("token:%s, at %d:%d\n", terminal_names[next_token.type], next_token.lineno, next_token.linepos);
 				#endif
 			}
 			else {
