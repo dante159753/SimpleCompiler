@@ -13,4 +13,8 @@ TreeNode* create_node(NodeType, int);
 
 TreeNode* error_node();
 
+void print_tree(TreeNode*);
+
+void print_node(TreeNode*);
+
 #endif

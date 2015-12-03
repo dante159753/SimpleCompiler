@@ -1,5 +1,16 @@
 #include "util.h"
 
+char * nonterminal_names[40] = {
+	"empty", "program", "decls", "decls", "decl", "decl", "stmt", "stmt", "stmt", "stmt", 
+	"ifstmt", "assignstmt", "compoundstmt", "whilestmt", "stmts", "stmts",
+	"boolexpr", "boolop", "boolop", "boolop", "boolop", "boolop", "boolop", 
+	"arithexpr", "arithexprprime", "arithexprprime", "arithexprprime", "multiexpr", 
+	"multiexprprime", "multiexprprime", "multiexprprime", 
+	"simpleexpr", "simpleexpr", "simpleexpr", "simpleexpr"
+};
+
+extern char * terminal_names[];
+
 char * copy_str(char * s)
 { int n;
   char * t;
@@ -131,4 +142,73 @@ TreeNode* error_node(){
 		t -> n_child = 0;
 	}
 	return t;
+}
+
+void print_node(TreeNode* node){
+	printf("(");
+	if (node->node_type == ERRORNODE){
+		printf("error node");
+	}
+	else if (node->node_type == TERMINAL){
+		printf("%s", terminal_names[node->type.term]);
+	}
+	else if (node->node_type == NONTERMINAL){
+		printf("%s", nonterminal_names[node->type.nonterm]);
+	}
+	printf(")");
+}
+
+void print_tree(TreeNode* root){
+	// special flag node
+	TreeNode* endline_node = create_node(0, 0);
+	TreeNode* l_paren_node = create_node(0, 0);
+	TreeNode* r_paren_node = create_node(0, 0);
+
+	TreeNode* node_list[300];
+	TreeNode* t;
+	int first = 0, last = 0, max_list = 298;
+	node_list[last++] = root;
+	node_list[last++] = endline_node;
+	while(last > first+1){
+		//printf("first: %d, last: %d, top_addr:%p\n", first, last, node_list[first]);
+		t = node_list[first];
+		if (t == l_paren_node){
+			printf(" [");
+			first++;
+		}
+		else if (t == r_paren_node){
+			printf("] ");
+			first++;
+		}
+		else if (t == endline_node){
+			printf("\n");
+			node_list[last] = endline_node;
+			last++;
+			first++;
+		}
+		else {
+			if (t->n_child > 0){
+				printf("<");
+				print_node(t);
+				printf(">");
+				first++;
+
+				node_list[last] = l_paren_node;
+				last++;
+				int i;
+				for (i=0; i<t->n_child; i++){
+					node_list[last] = t->child[i];
+					last++;
+				}
+				node_list[last] = r_paren_node;
+				last++;
+			}
+			else {
+				print_node(t);
+				first++;
+			}
+		}
+	}
+	printf("\n");
+
 }

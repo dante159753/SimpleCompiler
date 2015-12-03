@@ -1,11 +1,14 @@
 #include "globals.h"
 #include "util.h"
 
+//#define _DEBUG_
+
 #define N_TERMINAL 27
 #define START_NONTERMINAL 1
 #define MAX_RULE_ORDER 34
 
 extern int yylex();
+extern char* yytext;
 extern Token next_token;
 
 TokenType terminals[50] = {
@@ -23,6 +26,8 @@ char * terminal_names[40] = {
 	"<=", ">=", "==", "!=", "+", "-",
 	"*", "/", "$"
 };
+
+extern char * nonterminal_names[];
 
 int parsing_table[50][50] = {
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -145,6 +150,8 @@ TreeNode* push_node(NodeType nodetype, int order){
 	node_stack_top++;
 	node_stack[node_stack_top] = t;
 
+	//printf("push node: nodetype:%d\n", t->node_type);
+
 	check_node_stack();
 
 	return t;
@@ -164,10 +171,18 @@ void missed_error_message(int terminal){
 	printf("error: missed \"%s\" at %d:%d\n", terminal_names[terminal], next_token.lineno, next_token.linepos);
 }
 
+void get_next_token(){
+	yylex();
+	while(next_token.type == ERROR){
+		printf("unrecognized token:%s, at %d:%d\n", yytext, next_token.lineno, next_token.linepos);
+		yylex();
+	}
+}
+
 void scan(int nonterminal){
 	int terminal = terminal_order(next_token.type);
 	while(parsing_table[nonterminal][terminal] == MAX_RULE_ORDER + 2){
-		yylex();
+		get_next_token();
 		//printf("token:%s, at %d:%d\n", terminal_names[terminal_order(next_token.type)], next_token.lineno, next_token.linepos);
 		terminal = terminal_order(next_token.type);
 
@@ -182,28 +197,45 @@ TreeNode* parse(){
 	int top = 0; // stack's top
 
 	stack[top] = START_NONTERMINAL; // push start symbol into the stack
-	TreeNode* tree_root = push_node(NONTERMINAL, START_NONTERMINAL); // push root node to node stack
+
+	TreeNode* tree_root = NULL;
 
 	int terminal = 0;
 	int is_valid = 1;
-	yylex();
+	get_next_token();
 	//printf("token:%s, at %d:%d\n", terminal_names[terminal_order(next_token.type)], next_token.lineno, next_token.linepos);
 	
 	while(top >= 0){
-		//printf("top:%d, stack[top]:%d\n", top, stack[top]);
+		#ifdef _DEBUG_
+		if(stack[top] > 0){
+			printf("top:%d, stack[top] is nonterm:%d,%s\n", top, stack[top], nonterminal_names[stack[top]]);
+		}
+		else if(stack[top] < 0){
+			printf("top:%d, stack[top] is term:%d,%s\n", top, stack[top], terminal_names[abs(stack[top])]);
+		}
+		else{
+			printf("stack[top] is 0!!!\n");
+		}
+		#endif
 
 		terminal = terminal_order(next_token.type);
 
 		// terminal
 		if (stack[top] < 0){
 			if (abs(stack[top]) == terminal){
-				//printf("matched:%s, at %d:%d\n", terminal_names[terminal], next_token.lineno, next_token.linepos);
+				#ifdef _DEBUG_
+				printf("matched:%s, at %d:%d\n", terminal_names[terminal], next_token.lineno, next_token.linepos);
+				#endif
+
 				// matched, pop
 				top--;
 				push_node(TERMINAL, next_token.type);
 				// get next token
-				yylex();
-				//printf("token:%s, at %d:%d\n", terminal_names[terminal_order(next_token.type)], next_token.lineno, next_token.linepos);
+				get_next_token();
+
+				#ifdef _DEBUG_
+				printf("token:%s, at %d:%d\n", terminal_names[terminal_order(next_token.type)], next_token.lineno, next_token.linepos);
+				#endif
 			}
 			else {
 				missed_error_message(abs(stack[top]));
@@ -231,12 +263,20 @@ TreeNode* parse(){
 			}
 			// valid
 			else {
-				//printf("match rule %d\n", rule_order);
+				#ifdef _DEBUG_
+				printf("match rule %d\n", rule_order);
+				#endif
+
 				int * rule;
 				rule = push_rules[rule_order];
 
 				top--; // pop
-				push_node(NONTERMINAL, rule_order);
+				if(tree_root == NULL){ // get root node
+					tree_root = push_node(NONTERMINAL, rule_order);
+				}
+				else {
+					push_node(NONTERMINAL, rule_order);
+				}
 				int i = 0;
 				while(rule[i] != 0){
 					top++;
@@ -255,7 +295,7 @@ TreeNode* parse(){
 	}
 	// input is not empty
 	if (next_token.type != AT_EOF){
-		printf("error at %d:%d\n", next_token.lineno, next_token.linepos);
+		printf("error at %d:%d, program should have finished!\n", next_token.lineno, next_token.linepos);
 	}
 
 	return tree_root;

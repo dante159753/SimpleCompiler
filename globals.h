@@ -5,15 +5,11 @@
 
 typedef enum
 {
-	/* flag token */
-	AT_EOF,ERROR,
-	/* reserved words */
-	IF,THEN,ELSE,WHILE,INT,REAL,
-	/* multicharacter tokens */
-	ID,INTNUM,REALNUM,
-	/* special symbols */
-	ASSIGN,EQ,NEQ,LT,GT,LET,GET,PLUS,MINUS,TIMES,OVER,
-	LPAREN,RPAREN,LBRACKET,RBRACKET,SEMI
+	ERROR, SEMI, INT, ID, ASSIGN, INTNUM, 
+	REAL, REALNUM, IF, LPAREN, RPAREN, THEN, 
+	ELSE, LBRACKET, RBRACKET, WHILE, LT, GT, 
+	LET, GET, EQ, NEQ, PLUS, MINUS, 
+	TIMES, OVER, AT_EOF
 } TokenType;
 
 typedef enum
@@ -21,7 +17,6 @@ typedef enum
 	PROG=1, DECLS, DECL, STMT, IFSTMT, ASSIGNSTMT, COMPOUNDSTMT, WHILESTMT, STMTS, BOOLEXPR, BOOLOP,
 	ARITHEXPR, ARITHEXPR_P, MULTIEXPR, MULTIEXPR_P, SIMPLEEXPR
 } NontermType;
-
 typedef struct 
 {
 	TokenType type;

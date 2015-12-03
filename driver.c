@@ -25,6 +25,6 @@ int main(){
 	}
 	*/
 
-	parse();
+	print_tree(parse());
 	return 0;
 }

@@ -6,7 +6,7 @@
 #include "util.h"
 
 extern Token next_token;
-#define ECHO {next_token.type=ERROR;next_token.lineno=line_number;next_token.linepos=line_pos;line_pos+=yyleng;}
+#define ECHO {next_token.type=ERROR;next_token.lineno=line_number;next_token.linepos=line_pos;line_pos+=yyleng; return next_token.type;}
 int line_pos = 1;
 int line_number = 1;
 %}
