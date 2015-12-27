@@ -57,4 +57,20 @@ typedef struct treenode
 	}value;
 } TreeNode;
 
+typedef enum
+{
+	ERROR_EXPR,
+	INT_EXPR,
+	REAL_EXPR
+} ExprType;
+
+typedef struct
+{
+	ExprType exprtype;
+	union{
+		int int_val;
+		double real_val;
+	}value;
+} ExprValue;
+
 #endif

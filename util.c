@@ -232,3 +232,63 @@ void print_tree(TreeNode* root){
 	free(l_paren_node);
 	free(r_paren_node);
 }
+
+char* get_node_name(TreeNode* node){
+	if (node->node_type == ERRORNODE){
+		return "error node";
+	}
+	else if (node->node_type == TERMINAL){
+		return terminal_names[node->type.term];
+	}
+	else if (node->node_type == NONTERMINAL){
+		return nonterminal_names[node->type.nonterm];
+	}
+	return "unknown node";
+}
+
+char* get_type_name(TreeNode* node){
+	if (node->node_type == ERRORNODE){
+		return "error node";
+	}
+	else if (node->node_type == TERMINAL){
+		return terminal_names[node->type.term];
+	}
+	else if (node->node_type == NONTERMINAL){
+		return nonterminal_names[node->type.nonterm];
+	}
+	return "unknown node";
+}
+
+void print_tree_json(TreeNode* node){
+	if(node->n_child > 0){
+		printf("{\"name\":\"%s\", \"children\":[", get_node_name(node));
+		int i = 0;
+		while(i < node->n_child){
+			print_tree_json(node->child[i]);
+			if(i != node->n_child-1){
+				printf(",");
+			}
+			i++;
+		}
+		printf("]}");
+	}
+	else{
+		if(node->node_type == TERMINAL){
+			if(node->type.term == INTNUM){
+				printf("{\"name\":\"%s\", \"value\":\"%d\"}", get_node_name(node), node->value.int_val);
+			}
+			else if(node->type.term == REALNUM){
+				printf("{\"name\":\"%s\", \"value\":\"%.3lf\"}", get_node_name(node), node->value.real_val);
+			}
+			else if(node->type.term == ID){
+				printf("{\"name\":\"%s\", \"value\":\"%s\"}", get_node_name(node), node->value.name);
+			}
+			else{
+				printf("{\"name\":\"%s\"}", get_node_name(node));
+			}
+		}
+		else{
+			printf("{\"name\":\"%s\"}", get_node_name(node));
+		}
+	}
+}

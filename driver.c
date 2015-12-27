@@ -24,7 +24,11 @@ int main(){
 		yylex();
 	}
 	*/
-
-	print_tree(parse());
+	TreeNode* root = parse();
+	print_tree(root);
+	
+	printf("\n");
+	print_tree_json(root);
+	printf("\n");
 	return 0;
 }
