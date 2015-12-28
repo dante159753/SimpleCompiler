@@ -2,10 +2,10 @@
 #define _INTERPRETER_H_
 #include "globals.h"
 
-ExprValue* cal_expr(TreeNode* node);
-
-void build_table(TreeNode* declnode);
+int check_variable(TreeNode* node);
 
 void execute_node(TreeNode* node);
+
+void analyze(TreeNode* node);
 
 #endif

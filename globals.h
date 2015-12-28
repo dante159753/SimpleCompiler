@@ -59,7 +59,6 @@ typedef struct treenode
 
 typedef enum
 {
-	ERROR_EXPR,
 	INT_EXPR,
 	REAL_EXPR
 } ExprType;

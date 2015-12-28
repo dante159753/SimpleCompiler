@@ -1,5 +1,6 @@
 #include "util.h"
 #include "globals.h"
+#include "interpreter.h"
 
 Token next_token;
 extern int yylex();
@@ -26,9 +27,12 @@ int main(){
 	*/
 	TreeNode* root = parse();
 	print_tree(root);
-	
+
 	printf("\n");
 	print_tree_json(root);
 	printf("\n");
+	
+	analyze(root);
+
 	return 0;
 }

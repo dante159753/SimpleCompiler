@@ -138,6 +138,8 @@ TreeNode* push_node(NodeType nodetype, int order){
 	else if (nodetype == TERMINAL){
 		t = create_node(nodetype, 0);
 		t->type.term = order;
+		t->lineno = next_token.lineno;
+		t->linepos = next_token.linepos;
 		switch (order){
 			case ID:
 				t->value.name = next_token.value.name;

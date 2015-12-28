@@ -41,7 +41,8 @@ void insert_id(char* name, TokenType tokentype, void* id_val)
 		entry = (SymbolEntry*)malloc(sizeof(SymbolEntry));
 		entry->name = copy_str(name);
 		ExprValue* idvalue = (ExprValue*) malloc(sizeof(ExprValue));
-		if(tokentype == INTNUM)
+
+		if(tokentype == INT)
 		{
 			idvalue->exprtype = INT_EXPR;
 			idvalue->value.int_val = *(int*)id_val;
@@ -51,6 +52,7 @@ void insert_id(char* name, TokenType tokentype, void* id_val)
 			idvalue->exprtype = REAL_EXPR;
 			idvalue->value.real_val = *(double*)id_val;
 		}
+
 		entry->value = idvalue;
 		entry->next = hashTable[key];
 		hashTable[key] = entry;
@@ -78,5 +80,52 @@ int get_id(char* name, ExprValue ** idvalue)
 	{
 		*idvalue = entry->value;
 		return 1;
+	}
+}
+
+int find_id(char* name)
+{
+	int key = hash(name);
+	SymbolEntry* entry = hashTable[key];
+	while((entry != NULL) && (strcmp(name, entry->name) != 0))
+	{
+		entry = entry->next;
+	}
+	if(entry == NULL)
+	{
+		/* not found */
+		return -1;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+void print_entry(SymbolEntry* entry)
+{
+	printf("%s: ", entry->name);
+	if(entry->value->exprtype == INT_EXPR)
+	{
+		printf("%d\n", entry->value->value.int_val);
+	}
+	else
+	{
+		printf("%.3lf\n", entry->value->value.real_val);
+	}
+}
+
+void print_symbol_table()
+{
+	SymbolEntry* current;
+	int i;
+	for(i=0; i<TABLE_SIZE; i++)
+	{
+		current = hashTable[i];
+		while(current != NULL)
+		{
+			print_entry(current);
+			current = current->next;
+		}
 	}
 }
