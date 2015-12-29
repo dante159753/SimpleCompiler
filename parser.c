@@ -19,6 +19,15 @@ char * terminal_names[40] = {
 	"*", "/", "$"
 };
 
+int rule_order_to_nonterm[] = {
+	0, PROG, DECLS, DECLS, DECL, DECL, STMT, STMT, STMT, STMT,
+	IFSTMT, ASSIGNSTMT, COMPOUNDSTMT, WHILESTMT, STMTS, STMTS,
+	BOOLEXPR, BOOLOP, BOOLOP, BOOLOP, BOOLOP, BOOLOP, BOOLOP,
+	ARITHEXPR, ARITHEXPR_P, ARITHEXPR_P, ARITHEXPR_P, MULTIEXPR,
+	MULTIEXPR_P, MULTIEXPR_P, MULTIEXPR_P,
+	SIMPLEEXPR, SIMPLEEXPR, SIMPLEEXPR, SIMPLEEXPR
+};
+
 extern char * nonterminal_names[];
 
 int parsing_table[50][50] = {
@@ -133,7 +142,7 @@ TreeNode* push_node(NodeType nodetype, int order){
 	}
 	else if (nodetype == NONTERMINAL){
 		t = create_node(nodetype, node_child_number[order]);
-		t->type.nonterm = order;
+		t->type.nonterm = rule_order_to_nonterm[order];
 	}
 	else if (nodetype == TERMINAL){
 		t = create_node(nodetype, 0);
@@ -264,7 +273,7 @@ TreeNode* parse(){
 				rule = push_rules[rule_order];
 
 				top--; // pop
-				if(tree_root == NULL){ // get root node
+				if(tree_root == NULL){ // root of syntex tree
 					tree_root = push_node(NONTERMINAL, rule_order);
 				}
 				else {
@@ -284,7 +293,7 @@ TreeNode* parse(){
 	}
 	// success
 	if (is_valid && (next_token.type == AT_EOF)){
-		printf("valid!\n");
+		// printf("valid!\n");
 	}
 	// input is not empty
 	if (next_token.type != AT_EOF){

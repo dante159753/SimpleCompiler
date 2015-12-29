@@ -17,6 +17,6 @@ void print_tree(TreeNode*);
 
 void print_node(TreeNode*);
 
-void print_tree_json(TreeNode*);
+void print_tree_json(TreeNode*, FILE*);
 
 #endif

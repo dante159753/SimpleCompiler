@@ -23,7 +23,7 @@ int check_variable(TreeNode* node)
 					);
 				onerror = 1;
 			}
-			void* value = (void*)(&(node->value));
+			void* value = (void*)(&(node->child[3]->value));
 			insert_id(name, id_type, value);
 		}
 		else
@@ -211,7 +211,7 @@ int execute_boolexpr(TreeNode* node)
 	double l_val = result_l->exprtype == INT_EXPR? result_l->value.int_val : result_l->value.real_val;
 	double r_val = result_r->exprtype == INT_EXPR? result_r->value.int_val : result_r->value.real_val;
 
-	switch(node->child[1]->type.term)
+	switch(node->child[1]->child[0]->type.term)
 	{
 		case LT:
 			return l_val < r_val;
