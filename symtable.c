@@ -28,6 +28,11 @@ typedef struct sym_entry
 
 static SymbolEntry* hashTable[TABLE_SIZE];
 
+/**
+ * @param name name of id.
+ * @param tokentype tokentype of the tree node.
+ * @param id_val pointer to the value of the id
+ */
 void insert_id(char* name, TokenType tokentype, void* id_val)
 {
 	int key = hash(name);
@@ -63,6 +68,12 @@ void insert_id(char* name, TokenType tokentype, void* id_val)
 	}
 }
 
+/**
+ * Get id's value by name.
+ * @param name Name to find.
+ * @param idvalue Value struct of the id.
+ * @return 1 means the given name is found, -1 means not found.
+ */
 int get_id(char* name, ExprValue ** idvalue)
 {
 	int key = hash(name);
@@ -83,6 +94,11 @@ int get_id(char* name, ExprValue ** idvalue)
 	}
 }
 
+/**
+ * Determain wheather the name is in the symtable.
+ * @param name Name to find.
+ * @return 1 means the given name is found, -1 means not found.
+ */
 int find_id(char* name)
 {
 	int key = hash(name);
@@ -102,6 +118,10 @@ int find_id(char* name)
 	}
 }
 
+/**
+ * Pirnt the value of a symbol table entry.
+ * @param entry The symbol table entry to print.
+ */
 void print_entry(SymbolEntry* entry)
 {
 	printf("%s: ", entry->name);
@@ -115,6 +135,9 @@ void print_entry(SymbolEntry* entry)
 	}
 }
 
+/**
+ * Print current value of all entries in symbol table.
+ */
 void print_symbol_table()
 {
 	SymbolEntry* current;

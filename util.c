@@ -11,6 +11,11 @@ char * nonterminal_names[40] = {
 
 extern char * terminal_names[];
 
+/**
+ * Copy a string.
+ * @param s a string
+ * @return a copy of s
+ */ 
 char * copy_str(char * s)
 { int n;
   char * t;
@@ -23,6 +28,11 @@ char * copy_str(char * s)
   return t;
 }
 
+/**
+ * Mapping string to tokentype.
+ * @param s string of token.
+ * @return TokenType
+ */
 TokenType get_token_bystr(char* s)
 {
 	if (strlen(s) == 1){
@@ -104,6 +114,12 @@ TokenType get_token_bystr(char* s)
 	}
 }
 
+/**
+ * Create a new tree node.
+ * @param type Type of tree node.
+ * @param child_number Number of children.
+ * @return New node.
+ */
 TreeNode* create_node(NodeType type, int child_number){
 	TreeNode* new_node = (TreeNode*)malloc(sizeof(TreeNode));
 	if (new_node == NULL){
@@ -118,11 +134,16 @@ TreeNode* create_node(NodeType type, int child_number){
 		new_node -> sibling = NULL;
 		new_node -> lineno = 0;
 		new_node -> linepos = 0;
+		new_node -> leng = 0;
 		new_node -> n_child = child_number;
 	}
 	return new_node;
 }
 
+/**
+ * Return the error node for an error in the parsing progress.
+ * @return The error node.
+ */
 TreeNode* error_node(){
 	static TreeNode* t = NULL;
 	if (t==NULL){
@@ -144,6 +165,10 @@ TreeNode* error_node(){
 	return t;
 }
 
+/**
+ * Print a node of parsing tree.
+ * @param node The node to be printed.
+ */
 void print_node(TreeNode* node){
 	printf("(");
 	if (node->node_type == ERRORNODE){
@@ -171,6 +196,10 @@ void print_node(TreeNode* node){
 	printf(")");
 }
 
+/**
+ * Print the parsing tree.
+ * @param root Root of parsing tree.
+ */
 void print_tree(TreeNode* root){
 	// special flag node
 	TreeNode* endline_node = create_node(0, 0);
@@ -233,6 +262,10 @@ void print_tree(TreeNode* root){
 	free(r_paren_node);
 }
 
+/**
+ * @param node 
+ * @return Name of node.
+ */
 char* get_node_name(TreeNode* node){
 	if (node->node_type == ERRORNODE){
 		return "error node";
@@ -246,6 +279,10 @@ char* get_node_name(TreeNode* node){
 	return "unknown node";
 }
 
+/**
+ * @param node
+ * @return Name of type.
+ */
 char* get_type_name(TreeNode* node){
 	if (node->node_type == ERRORNODE){
 		return "error node";
@@ -259,6 +296,11 @@ char* get_type_name(TreeNode* node){
 	return "unknown node";
 }
 
+/**
+ * Print json info of the parsing tree to a file.
+ * @param node 
+ * @param fp Pointer for the output file.
+ */
 void print_tree_json(TreeNode* node, FILE* fp){
 	if(node->n_child > 0){
 		fprintf(fp, "{\"name\":\"%s\", \"children\":[", get_node_name(node));

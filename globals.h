@@ -3,6 +3,9 @@
 
 #define MAX_CHILDREN 10
 
+/**
+ * Indicate token type in lexical analysis.
+ */
 typedef enum
 {
 	ERROR, SEMI, INT, ID, ASSIGN, INTNUM, 
@@ -12,25 +15,34 @@ typedef enum
 	TIMES, OVER, AT_EOF
 } TokenType;
 
+/**
+ * Indicate nonterminals in syntactical analysis;
+ */
 typedef enum
 {
 	PROG=1, DECLS, DECL, STMT, IFSTMT, ASSIGNSTMT, COMPOUNDSTMT, WHILESTMT, STMTS, BOOLEXPR, BOOLOP,
 	ARITHEXPR, ARITHEXPR_P, MULTIEXPR, MULTIEXPR_P, SIMPLEEXPR
 } NontermType;
 
-typedef struct 
+/**
+ * Contains concreate token infomation.
+ */
+typedef struct
 {
 	TokenType type;
 	union{
-		char* error_str;/* for ERROR */
-		char* name;/* for ID */
-		int int_val;/* for INTNUM */
-		double real_val;/* for REALNUM */
+		char* error_str;/*< for ERROR >*/
+		char* name;/*< for ID >*/
+		int int_val;/*< for INTNUM >*/
+		double real_val;/*< for REALNUM >*/
 	}value;
 	int lineno;
 	int linepos;
 } Token;
 
+/**
+ * Type of syntax tree's node.
+ */
 typedef enum
 {
 	TERMINAL,
@@ -38,6 +50,9 @@ typedef enum
 	ERRORNODE
 } NodeType;
 
+/**
+ * Node of syntax tree.
+ */
 typedef struct treenode
 {
 	NodeType node_type;
@@ -47,9 +62,10 @@ typedef struct treenode
 	}type;
 	struct treenode* child[MAX_CHILDREN];
 	struct treenode* sibling;
-	int n_child;
+	int n_child;/*< Number of children. >*/
 	int lineno;
 	int linepos;
+	int leng;/*< If this node is length of token.
 	union{
 		char* name;/* for ID */
 		int int_val;/* for INTNUM */
@@ -57,12 +73,18 @@ typedef struct treenode
 	}value;
 } TreeNode;
 
+/**
+ * Expression's type used in executing.
+ */
 typedef enum
 {
 	INT_EXPR,
 	REAL_EXPR
 } ExprType;
 
+/**
+ * Expression's value used in executing.
+ */
 typedef struct
 {
 	ExprType exprtype;

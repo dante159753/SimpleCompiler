@@ -3,8 +3,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern int is_for_ui;
+extern int mode;
+/**
+ * Wheather there is an error in executing.
+ */
 int onerror = 0;
 
+/**
+ * Find redefining or undeclearing error.
+ * @param node Tree node to check.
+ */
 int check_variable(TreeNode* node)
 {
 	if(node->node_type == NONTERMINAL)
@@ -16,6 +25,15 @@ int check_variable(TreeNode* node)
 			if(find_id(name) == 1)
 			{
 				TreeNode* name_node = node->child[1];
+
+				if(is_for_ui)
+				{
+					fprintf(stderr, ",{'type': 2, 'lineno': %d, 'linepos': %d, 'len': %d}",
+						name_node->lineno, 
+						name_node->linepos, 
+						name_node->leng
+						);
+				}
 				printf("error at %d,%d: Redefined identifer %s\n", 
 					name_node->lineno, 
 					name_node->linepos, 
@@ -43,6 +61,14 @@ int check_variable(TreeNode* node)
 			char* name = node->value.name;
 			if(find_id(name) == -1)
 			{
+				if(is_for_ui)
+				{
+					fprintf(stderr, ",{'type': 2, 'lineno': %d, 'linepos': %d, 'len': %d}",
+						node->lineno, 
+						node->linepos, 
+						node->leng
+						);
+				}
 				printf("error at %d,%d: Undecleared identifer %s\n", 
 					node->lineno,
 					node->linepos,
@@ -54,6 +80,13 @@ int check_variable(TreeNode* node)
 	}
 }
 
+/**
+ * Calculate value of an arithmatic expression.
+ * @param left left of operator.
+ * @param right right of operator.
+ * @param op type of operator.
+ * @return calculation result.
+ */
 ExprValue* do_cal(ExprValue* left, ExprValue* right, TokenType op)
 {
 	ExprValue* cal_result = (ExprValue*) malloc(sizeof(ExprValue));
@@ -99,6 +132,12 @@ ExprValue* do_cal(ExprValue* left, ExprValue* right, TokenType op)
 	return cal_result;
 }
 
+/**
+ * Evaluate the result of a expression recursively.
+ * @param node Node to evaluate.
+ * @param pre_value Previous value.
+ * @return Value of the expression.
+ */
 ExprValue* eval_expr(TreeNode* node, ExprValue* pre_value)
 {
 	if(node->node_type == NONTERMINAL)
@@ -194,6 +233,11 @@ ExprValue* eval_expr(TreeNode* node, ExprValue* pre_value)
 	}
 }
 
+/**
+ * Call eval_expr to get value of a expresion.
+ * @param node expression node to evaluate.
+ * @return value fo expression.
+ */
 ExprValue* cal_expr(TreeNode* node)
 {
 	ExprValue* empty_node = (ExprValue*) malloc(sizeof(ExprValue));
@@ -203,6 +247,11 @@ ExprValue* cal_expr(TreeNode* node)
 	return eval_expr(node, empty_node);
 }
 
+/**
+ * Return the state of a if-statement.
+ * @param node If statement node.
+ * @return state.
+ */
 int execute_boolexpr(TreeNode* node)
 {
 	ExprValue* result_l = cal_expr(node->child[0]);
@@ -237,6 +286,10 @@ int execute_boolexpr(TreeNode* node)
 	}
 }
 
+/**
+ * Execute a node according to its type.
+ * @param node Node to execute.
+ */
 void execute_node(TreeNode* node)
 {
 	if(node->node_type == NONTERMINAL)
@@ -279,6 +332,14 @@ void execute_node(TreeNode* node)
 				if(id_val->exprtype == INT_EXPR && return_val->exprtype == REAL_EXPR)
 				{
 					// warning
+					if(is_for_ui)
+					{
+						fprintf(stderr, ",{'type': 3, 'lineno': %d, 'linepos': %d, 'len': %d}",
+							name_node->lineno, 
+							name_node->linepos, 
+							name_node->leng
+							);
+					}
 					printf("warning at %d,%d: Assign real value to int variable %s\n", 
 						name_node->lineno,
 						name_node->linepos,
@@ -335,20 +396,49 @@ void execute_node(TreeNode* node)
 	}
 }
 
-
+/**
+ * Main semantic analyzing and executing funtion.
+ * @param node Root of parsing tree.
+ */
 void analyze(TreeNode* node)
 {
 	// init program state
 	onerror = 0;
-	check_variable(node);
-	if(!onerror)
-	{
-		execute_node(node);
 
-		print_symbol_table();
-	}
-	else
+	if(is_for_ui)
 	{
-		printf("There are errors in program, execution terminated.\n");
+		fprintf(stderr, "[{'type': 5}");
 	}
+
+	check_variable(node);
+
+	if(is_for_ui)
+	{
+		fprintf(stderr, "]\n");
+	}
+
+	if(mode == 0)
+	{
+		if(!onerror)
+		{
+			if(is_for_ui)
+			{
+				fprintf(stderr, "[{'type': 5}");
+			}
+
+			execute_node(node);
+
+			if(is_for_ui)
+			{
+				fprintf(stderr, "]\n");
+			}
+	
+			print_symbol_table();
+		}
+		else
+		{
+			printf("There are errors in program, execution terminated.\n");
+		}
+	}
+
 }

@@ -10,7 +10,12 @@
 extern int yylex();
 extern char* yytext;
 extern Token next_token;
+extern int yyleng;
+extern int is_for_ui;
 
+/**
+ * Map ternimal orders to their corespond string.Used for print error.
+ */
 char * terminal_names[40] = {
 	"error", ";", "int", "id", "=", "intvalue", 
 	"real", "realvalue", "if", "(", ")", "then",
@@ -19,6 +24,9 @@ char * terminal_names[40] = {
 	"*", "/", "$"
 };
 
+/**
+ * Map rule order in the stack to Nonterminal enum.
+ */
 int rule_order_to_nonterm[] = {
 	0, PROG, DECLS, DECLS, DECL, DECL, STMT, STMT, STMT, STMT,
 	IFSTMT, ASSIGNSTMT, COMPOUNDSTMT, WHILESTMT, STMTS, STMTS,
@@ -30,6 +38,9 @@ int rule_order_to_nonterm[] = {
 
 extern char * nonterminal_names[];
 
+/**
+ * Pasing table, row is nonterminal, collum is terminal.
+ */
 int parsing_table[50][50] = {
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,36,1,36,36,36,1,36,36,36,36,36,36,1,36,36,36,36,36,36,36,36,36,36,36,36,35}, // program 1
@@ -50,7 +61,7 @@ int parsing_table[50][50] = {
 	{0,35,36,31,36,32,36,33,36,34,35,36,36,36,36,36,35,35,35,35,35,35,35,35,35,35,35} // simpleexpr 16
 };
 
-/* 
+/**
 replace rule, "0" indicate the end of a rule 
 positive numbers indicate the non-terminals
 negetive numbers indicate the terminals
@@ -93,6 +104,9 @@ int push_rules[50][15] = {
 	{-10,12,-9,0} // 34
 };
 
+/**
+ * Children number for every rule's tree node.
+ */
 int node_child_number[40] = {
 	0, 2, 3, 0, 4, 4, //0-5
 	1, 1, 1, 1, 8, //6-10
@@ -103,6 +117,11 @@ int node_child_number[40] = {
 	1, 1, 1, 3 //31-34
 };
 
+/**
+ * Determain wheather a tree node got all its children.
+ * @param t Node of 
+ * @return
+ */
 int node_finished(TreeNode* t){
 	int n_fin = 0;
 	while(t->child[n_fin] != NULL){
@@ -111,9 +130,18 @@ int node_finished(TreeNode* t){
 	return n_fin == t->n_child;
 }
 
+/**
+ * A list to simulate node stack.
+ */
 TreeNode* node_stack[200];
+/**
+ * Indicate top of the ndoe stack.
+ */
 int node_stack_top = -1;
 
+/**
+ * Pop finished tree node until an unfinished.
+ */
 void check_node_stack(){
 	while(node_stack_top >= 0){
 		TreeNode* t = node_stack[node_stack_top];
@@ -135,6 +163,11 @@ void check_node_stack(){
 	}
 }
 
+/**
+ * @param nodetype Type of current node.
+ * @param order Order of this ternimal or nonterminal.
+ * @return Reference to the new tree node.
+ */
 TreeNode* push_node(NodeType nodetype, int order){
 	TreeNode* t;
 	if (nodetype == ERRORNODE){
@@ -149,6 +182,7 @@ TreeNode* push_node(NodeType nodetype, int order){
 		t->type.term = order;
 		t->lineno = next_token.lineno;
 		t->linepos = next_token.linepos;
+		t->leng = yyleng;
 		switch (order){
 			case ID:
 				t->value.name = next_token.value.name;
@@ -173,18 +207,55 @@ TreeNode* push_node(NodeType nodetype, int order){
 	return t;
 }
 
+/**
+ * generate error info for given terminal order.
+ * @param terminal Order of the missed ternimal.
+ */
 void missed_error_message(int terminal){
+	if(is_for_ui)
+	{
+		fprintf(stderr, ",{'type': 1, 'lineno': %d, 'linepos': %d}", 
+			next_token.lineno,
+			next_token.linepos
+			);
+	}
 	printf("error: missed \"%s\" at %d:%d\n", terminal_names[terminal], next_token.lineno, next_token.linepos);
 }
 
+/**
+ * Call lexical scanner, get the next token.
+ */
 void get_next_token(){
 	yylex();
 	while(next_token.type == ERROR){
+		if(is_for_ui)
+		{
+			fprintf(stderr, ",{'type': 0, 'token': %d, 'lineno': %d, 'linepos': %d, 'len': %d}", 
+				next_token.type,
+				next_token.lineno,
+				next_token.linepos,
+				yyleng
+				);
+		}
+
 		printf("unrecognized token:%s, at %d:%d\n", yytext, next_token.lineno, next_token.linepos);
 		yylex();
 	}
+	if(is_for_ui && next_token.type != AT_EOF)
+	{
+		fprintf(stderr, ",{'type': 0, 'token': %d, 'lineno': %d, 'linepos': %d, 'len': %d}", 
+			next_token.type,
+			next_token.lineno,
+			next_token.linepos,
+			yyleng
+			);
+	}
 }
 
+/**
+ * At scan error. Scan until a valid token.
+ * @param nonterminal The nonterminal at top of the stack.
+ */
 void scan(int nonterminal){
 	while(parsing_table[nonterminal][next_token.type] == MAX_RULE_ORDER + 2){
 		get_next_token();
@@ -195,6 +266,15 @@ void scan(int nonterminal){
 	}
 }
 
+/**
+ * If any error occurred in the parsing prograss, set to 0.
+ */
+int is_valid = 1;
+
+/**
+ * Main parsing function.
+ * @return Root of parsing tree.
+ */
 TreeNode* parse(){
 	int stack[500];
 	int top = 0; // stack's top
@@ -204,7 +284,6 @@ TreeNode* parse(){
 	TreeNode* tree_root = NULL;
 
 	int terminal = 0;
-	int is_valid = 1;
 	get_next_token();
 
 	while(top >= 0){
@@ -252,6 +331,13 @@ TreeNode* parse(){
 
 			// pop
 			if (rule_order == MAX_RULE_ORDER + 1){
+				if(is_for_ui)
+				{
+					fprintf(stderr, ",{'type': 1, 'lineno': %d, 'linepos': %d}", 
+						next_token.lineno,
+						next_token.linepos
+						);
+				}
 				printf("error at %d:%d, do pop\n", next_token.lineno, next_token.linepos);
 				top--; // pop
 				push_node(ERRORNODE, 0);
@@ -259,6 +345,13 @@ TreeNode* parse(){
 			} 
 			// scan
 			else if (rule_order == MAX_RULE_ORDER + 2){
+				if(is_for_ui)
+				{
+					fprintf(stderr, ",{'type': 1, 'lineno': %d, 'linepos': %d}", 
+						next_token.lineno,
+						next_token.linepos
+						);
+				}
 				printf("error at %d:%d, do scan\n", next_token.lineno, next_token.linepos);
 				scan(stack[top]);
 				is_valid = 0;
@@ -297,6 +390,13 @@ TreeNode* parse(){
 	}
 	// input is not empty
 	if (next_token.type != AT_EOF){
+		if(is_for_ui)
+		{
+			fprintf(stderr, ",{'type': 1, 'lineno': %d, 'linepos': %d}", 
+				next_token.lineno,
+				next_token.linepos
+				);
+		}
 		printf("error at %d:%d, program should have finished!\n", next_token.lineno, next_token.linepos);
 	}
 

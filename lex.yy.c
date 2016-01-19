@@ -340,6 +340,9 @@ void yyfree (void *  );
 
 /* Begin user sect3 */
 
+#define yywrap(n) 1
+#define YY_SKIP_YYWRAP
+
 typedef unsigned char YY_CHAR;
 
 FILE *yyin = (FILE *) 0, *yyout = (FILE *) 0;
@@ -509,7 +512,7 @@ extern Token next_token;
 #define ECHO {next_token.type=ERROR;next_token.lineno=line_number;next_token.linepos=line_pos;line_pos+=yyleng; return next_token.type;}
 int line_pos = 1;
 int line_number = 1;
-#line 513 "lex.yy.c"
+#line 516 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -698,7 +701,7 @@ YY_DECL
     
 #line 25 "lexical_processor.L"
 
-#line 702 "lex.yy.c"
+#line 705 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -837,7 +840,7 @@ YY_RULE_SETUP
 #line 36 "lexical_processor.L"
 ECHO;
 	YY_BREAK
-#line 841 "lex.yy.c"
+#line 844 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
