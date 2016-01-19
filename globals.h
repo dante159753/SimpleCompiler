@@ -31,10 +31,10 @@ typedef struct
 {
 	TokenType type;
 	union{
-		char* error_str;/*< for ERROR >*/
-		char* name;/*< for ID >*/
-		int int_val;/*< for INTNUM >*/
-		double real_val;/*< for REALNUM >*/
+		char* error_str;/*< for ERROR */
+		char* name;/*< for ID */
+		int int_val;/*< for INTNUM */
+		double real_val;/*< for REALNUM */
 	}value;
 	int lineno;
 	int linepos;
@@ -62,10 +62,10 @@ typedef struct treenode
 	}type;
 	struct treenode* child[MAX_CHILDREN];
 	struct treenode* sibling;
-	int n_child;/*< Number of children. >*/
+	int n_child;/*< Number of children. */
 	int lineno;
 	int linepos;
-	int leng;/*< If this node is length of token.
+	int leng;/*< If this node is length of token. */
 	union{
 		char* name;/* for ID */
 		int int_val;/* for INTNUM */
