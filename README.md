@@ -1,16 +1,16 @@
 # SimpleCompiler
 
-* globals.h			定义用到的结构体和枚举值
-* driver.c			程序入口，接受命令行参数并调用相应的分析函数
-* lexical_processor.L	lex文件，用于生成词法分析器代码
-* lex.yy.c			生成的词法分析器代码
-* parser.c			语法分析器代码
-* util.h				工具函数头文件
-* util.c				工具函数实现
-* symtable.h			符号表头文件
-* symtable.c			符号表实现
-* interpreter.h		语义分析及解释器头文件
-* interpreter.c		语义分析及解释器实现
+* `globals.h`: 定义用到的结构体和枚举值
+* `driver.c`:			程序入口，接受命令行参数并调用相应的分析函数
+* `lexical_processor.L`:	lex文件，用于生成词法分析器代码
+* `lex.yy.c`:			生成的词法分析器代码
+* `parser.c`:			语法分析器代码
+* `util.h`:				工具函数头文件
+* `util.c`:				工具函数实现
+* `symtable.h`:			符号表头文件
+* `symtable.c`:			符号表实现
+* `interpreter.h`:		语义分析及解释器头文件
+* `interpreter.c`:		语义分析及解释器实现
 
 ## 编译
 编译过程在windows下的 gcc4.6.3 以及linux下的 gcc4.8.4 中测试成功
